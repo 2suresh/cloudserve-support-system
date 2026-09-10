@@ -11,10 +11,18 @@ for the full design rationale this build follows.
 Requires Python 3.10+ (developed and tested on 3.11). **Use 3.11 explicitly, not
 whatever `python3` resolves to** — on a machine where that's a newer release
 (3.14 in testing), `pandas`/`psycopg2-binary`'s original exact pins fail to
-build entirely (fixed below to install cleanly on any 3.10–3.14), but numpy
-and SQLAlchemy still hit real upstream binary-compatibility issues at runtime
-on 3.14 specifically. If `python3.11` isn't available, 3.12 or 3.13 are safer
-bets than 3.14 until those upstream issues are fixed.
+build entirely; that part is fixed below to install cleanly on any 3.10–3.14.
+
+3.14 specifically has one further problem that is **not** fixed, deliberately:
+`numpy`'s wheels below 2.3 fail to import on 3.14 (`_umath_linalg` can't find
+a LAPACK symbol, an Accelerate-framework linking change on newer macOS/Xcode)
+— but `langchain<0.2.0` (this project's pin, §09's named orchestration
+library) hard-requires `numpy<2`. Those two constraints cannot both be
+satisfied. The alternative — moving off the langchain 0.1.x line to unblock
+a newer numpy — is a bigger, less-tested change than three days before a
+deadline warrants for a Python release the Brief doesn't require. If
+`python3.11` isn't available, 3.12 or 3.13 are safe; 3.14 is not, until either
+numpy or langchain resolves this upstream.
 
 ```bash
 python3.11 -m venv .venv
