@@ -8,7 +8,13 @@ for the full design rationale this build follows.
 
 ## Setup
 
-Requires Python 3.10+ (developed and tested on 3.11).
+Requires Python 3.10+ (developed and tested on 3.11). **Use 3.11 explicitly, not
+whatever `python3` resolves to** — on a machine where that's a newer release
+(3.14 in testing), `pandas`/`psycopg2-binary`'s original exact pins fail to
+build entirely (fixed below to install cleanly on any 3.10–3.14), but numpy
+and SQLAlchemy still hit real upstream binary-compatibility issues at runtime
+on 3.14 specifically. If `python3.11` isn't available, 3.12 or 3.13 are safer
+bets than 3.14 until those upstream issues are fixed.
 
 ```bash
 python3.11 -m venv .venv
@@ -35,6 +41,8 @@ number:
 | `openai` | `1.0.0` | `>=1.10.0,<2.0.0` | `langchain-openai==0.0.7` requires `openai>=1.10.0`. |
 | `sentence-transformers` | `2.2.2` | `>=3.0.0` | 2.2.2 imports `cached_download` from `huggingface_hub`, removed in the `huggingface_hub` version that current `transformers`/`langchain` pull in transitively. |
 | `langchain` / `langgraph` / `langchain-community` / `langchain-openai` | exact pins | same versions as floors (`>=`, `<` next minor) | The exact pins depend on an old `langsmith` release with no wheel available for this environment; same minor line, resolvable set. |
+| `pandas` / `numpy` / `scikit-learn` | exact pins (`2.0.0`/`1.24.0`/`1.3.0`) | `>=` floors, same versions | Not imported anywhere in `src/`, `evaluation/`, `scripts/`, or `tests/` — kept only because the given file lists them. The exact pins have no wheel on Python 3.14 and fail building from source there; since nothing depends on the exact version, a floor is strictly safer than a pin that works on some machines and not others. |
+| `psycopg2-binary` | `2.9.9` | `>=2.9.9` | `2.9.9` has no prebuilt wheel for Python 3.14 and fails to build from source (uses a private CPython API removed in 3.14). Only relevant if `DATABASE_URL` points at Postgres — SQLite, the default, needs no driver at all. |
 
 Everything else installs at the exact pinned version. Ran `pip check` clean
 after these changes.

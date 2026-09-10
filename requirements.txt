@@ -9,9 +9,14 @@ chromadb==0.4.24
 sentence-transformers>=3.0.0
 
 # Data Processing
-pandas==2.0.0
-numpy==1.24.0
-scikit-learn==1.3.0
+# Not imported anywhere in src/, evaluation/, scripts/, or tests/ -- kept only because the
+# given requirements.txt lists them. Relaxed from exact pins (pandas==2.0.0 etc.) because
+# those have no wheel for newer Python (e.g. 3.14) and fail to build from source; since
+# nothing actually depends on the exact version, a range is strictly safer than an exact pin
+# that works on some machines and not others.
+pandas>=2.0.0
+numpy>=1.24.0
+scikit-learn>=1.3.0
 
 # Web Framework
 fastapi==0.104.0
@@ -31,7 +36,10 @@ prometheus-client==0.18.0
 python-json-logger==2.0.7
 
 # Database
-psycopg2-binary==2.9.9
+# psycopg2-binary==2.9.9 has no prebuilt wheel for newer Python (e.g. 3.14) and fails to
+# build from source there (uses a private CPython API removed in 3.14). Only needed at all
+# if DATABASE_URL points at Postgres -- SQLite (the default) needs no database driver.
+psycopg2-binary>=2.9.9
 SQLAlchemy==2.0.0
 
 # Testing & Quality
