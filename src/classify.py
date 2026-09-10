@@ -36,7 +36,18 @@ _DISAMBIGUATION_NOTES = (
     "questionnaires) that aren't specifically about storage location or exporting data.\n"
     "- api_usage_question vs configuration_help: use api_usage_question when the ticket is about "
     "how to call the API itself (endpoints, parameters, responses, authentication headers). Use "
-    "configuration_help for settings changed through the console UI rather than the API.\n\n"
+    "configuration_help for settings changed through the console UI rather than the API.\n"
+    "- api_usage_question vs database_issue: use api_usage_question when the ticket is about how "
+    "the API itself behaves during calls -- pagination, cursors, iterating over paged results, "
+    "rate limits on read calls -- even when it uses words like 'records', 'collection', or "
+    "'cursor' that sound database-related. Use database_issue only for the actual database or "
+    "storage layer failing (a connection, a query, a migration, a restore), not for how the API "
+    "surfaces that data to a caller.\n"
+    "- api_key_issue vs rollback_request: use api_key_issue when the ticket is about a "
+    "credential or API key being exposed, needing rotation, or being replaced -- even when "
+    "phrased as needing 'the correct order of operations' or wanting to avoid downtime, which "
+    "sounds procedural but is about a credential, not a deployment. Use rollback_request only "
+    "when the customer explicitly wants to revert a deployed release or version, not a key.\n\n"
 )
 
 _SYSTEM_PROMPT = (
