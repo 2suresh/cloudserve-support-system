@@ -70,6 +70,7 @@ def chunk_document(doc: dict) -> list[dict]:
                 "doc_id": doc["doc_id"],
                 "title": title,
                 "category": doc.get("category"),
+                "last_reviewed_days_ago": doc.get("last_reviewed_days_ago", 0),
                 "text": c["text"],
             }
         )
@@ -99,7 +100,15 @@ def build_index(documentation_path: str | Path, force: bool = False) -> int:
     collection.add(
         ids=[c["chunk_id"] for c in all_chunks],
         documents=[c["text"] for c in all_chunks],
-        metadatas=[{"doc_id": c["doc_id"], "title": c["title"], "category": c["category"] or ""} for c in all_chunks],
+        metadatas=[
+            {
+                "doc_id": c["doc_id"],
+                "title": c["title"],
+                "category": c["category"] or "",
+                "last_reviewed_days_ago": c["last_reviewed_days_ago"],
+            }
+            for c in all_chunks
+        ],
         embeddings=embeddings,
     )
     logger.info("indexed %s chunks from %s documents", len(all_chunks), len(docs))
@@ -147,6 +156,8 @@ class Retriever:
             score = 1.0 - distance  # cosine distance -> similarity
             if score < threshold:
                 continue
+            if meta.get("last_reviewed_days_ago", 0) > config.RETRIEVAL_RECENCY_LIMIT_DAYS:
+                continue  # FR-11: an article reviewed too long ago can't ground an auto-answer
             passages.append(
                 RetrievedPassage(
                     doc_id=meta["doc_id"],

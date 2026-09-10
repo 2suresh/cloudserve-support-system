@@ -28,6 +28,10 @@ LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
 CONFIDENCE_THRESHOLD = float(os.getenv("CONFIDENCE_THRESHOLD", "0.80"))
 RETRIEVAL_TOP_K = int(os.getenv("RETRIEVAL_TOP_K", "5"))
 RETRIEVAL_RELEVANCE_THRESHOLD = float(os.getenv("RETRIEVAL_RELEVANCE_THRESHOLD", "0.30"))
+# FR-11: an article not reviewed within this many days can't ground an auto-answer, however
+# well it matches. Every doc in the supplied corpus is 0 days old, so this can't be exercised
+# against real data here -- see tests/test_retrieve.py for a synthetic check of the mechanism.
+RETRIEVAL_RECENCY_LIMIT_DAYS = int(os.getenv("RETRIEVAL_RECENCY_LIMIT_DAYS", "180"))
 
 # Intent categories that never auto-respond regardless of confidence (Brief §05, §07).
 POLICY_EXCLUDED_INTENTS = {
