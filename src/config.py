@@ -36,6 +36,13 @@ POLICY_EXCLUDED_INTENTS = {
     "data_residency",
 }
 
+# Kill switch: set AUTO_RESPONSE_ENABLED=false to disable every auto-response without a
+# code deploy. Checked at the last possible moment (node_finalize), so flipping it takes
+# effect on the next ticket with no restart needed. When off, every ticket that would have
+# been sent to the customer is escalated instead -- the system keeps processing, it just
+# stops sending anything automatically.
+AUTO_RESPONSE_ENABLED = os.getenv("AUTO_RESPONSE_ENABLED", "true").lower() not in ("false", "0", "no")
+
 LLM_MAX_RETRIES = int(os.getenv("LLM_MAX_RETRIES", "3"))
 LLM_TIMEOUT_SECONDS = float(os.getenv("LLM_TIMEOUT_SECONDS", "20"))
 LLM_BACKOFF_BASE_SECONDS = float(os.getenv("LLM_BACKOFF_BASE_SECONDS", "1.5"))

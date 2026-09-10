@@ -138,13 +138,20 @@ def node_validate(state: PipelineState) -> dict:
     return {"validation": validation, "log_entries": state["log_entries"] + [entry.model_dump()]}
 
 
+_AI_DISCLOSURE = "\n\n---\nThis response was drafted automatically from our documentation, not written by a person."
+
+
 def node_finalize(state: PipelineState) -> dict:
     ticket, routing, validation, generation = state["ticket"], state["routing"], state["validation"], state["generation"]
-    if validation.passed and routing.action == "auto_respond":
-        final_action, final_text = "sent_to_customer", generation.draft_text
+    if validation.passed and routing.action == "auto_respond" and config.AUTO_RESPONSE_ENABLED:
+        final_action, final_text = "sent_to_customer", generation.draft_text + _AI_DISCLOSURE
+        reason = routing.reason
     else:
         final_action, final_text = "escalated", generation.draft_text
-    reason = validation.blocked_reason or routing.reason
+        if not config.AUTO_RESPONSE_ENABLED and validation.passed and routing.action == "auto_respond":
+            reason = "kill switch active (AUTO_RESPONSE_ENABLED=false) -- auto-response withheld"
+        else:
+            reason = validation.blocked_reason or routing.reason
     entry = _entry(ticket, "finalize", final_action, final_action, reason)
     return {"final_action": final_action, "final_text": final_text, "log_entries": state["log_entries"] + [entry.model_dump()]}
 

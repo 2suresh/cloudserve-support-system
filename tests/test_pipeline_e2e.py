@@ -1,4 +1,4 @@
-from src import decision_log, llm_client
+from src import config, decision_log, llm_client
 from src.graph import run_pipeline
 
 
@@ -33,6 +33,18 @@ def test_engineered_guardrail_ticket_gets_blocked_and_escalated(monkeypatch):
     rows = decision_log.rows_for_ticket("E2E-GUARDRAIL")
     validate_row = next(r for r in rows if r.stage == "validate")
     assert validate_row.guardrail_blocked == 1
+
+
+def test_kill_switch_escalates_everything_instead_of_sending(monkeypatch):
+    monkeypatch.setattr(llm_client, "chat_json", _stub_chat_json)
+    monkeypatch.setattr(config, "AUTO_RESPONSE_ENABLED", False)
+    raw = {"ticket_id": "E2E-KILLSWITCH", "channel": "chat", "body": "How is my invoice calculated this month?"}
+    result = run_pipeline(raw)
+
+    assert result["final_action"] == "escalated"
+    rows = decision_log.rows_for_ticket("E2E-KILLSWITCH")
+    finalize_row = next(r for r in rows if r.stage == "finalize")
+    assert "kill switch" in finalize_row.reason
 
 
 def test_malformed_ticket_does_not_crash_the_pipeline(monkeypatch):
