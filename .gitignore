@@ -1,0 +1,17 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.env
+storage/
+evaluation/results/
+data/*.json
+!data/documentation.json
+!data/.gitkeep
+*.egg-info/
+.DS_Store
+.idea/
+
+# Report/workbooks/effort log — Part 2+3 of the submission, not part of the
+# source code repo (Part 4). Kept here for convenient editing, not for git.
+deliverables/
