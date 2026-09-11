@@ -54,12 +54,17 @@ _DISAMBIGUATION_NOTES = (
     "a stage -- even though the word 'rollback' or 'rolls back' appears, since that describes "
     "what the platform did, not what the customer is asking for. Use rollback_request only when "
     "the customer is explicitly asking to revert to a previous release or version themselves.\n"
-    "- compliance_request vs data_export: use compliance_request when an export or access-records "
-    "request is driven by an audit, auditor, regulatory, or retention-policy question -- even "
-    "when the ticket literally asks to 'export' records or data -- because the underlying need is "
-    "audit/compliance, not the customer's own operational use of the data. Use data_export only "
-    "when the customer wants to extract or download their own data for their own use, with no "
-    "audit, auditor, or retention-policy question involved.\n\n"
+    "- compliance_request vs data_export: use compliance_request only when the ticket explicitly "
+    "names an auditor or an audit, or explicitly asks about a data-retention period/policy, "
+    "alongside a request to export or see records -- it is that explicit audit/auditor/retention "
+    "framing, not the mere word 'export', that makes it compliance_request. Use data_export "
+    "whenever none of those explicit words (auditor, audit, retention) are present, including "
+    "when the customer just wants to extract or download their own data for their own use. This "
+    "rule narrows data_export specifically -- it does not change the data_residency rule above: a "
+    "question about where data is physically stored, or a request for written confirmation of "
+    "storage location, is still data_residency even if the customer mentions needing it for their "
+    "own compliance purposes, as long as no auditor/audit/retention word is used and the ticket "
+    "isn't asking to export or see records.\n\n"
 )
 
 _SYSTEM_PROMPT = (
