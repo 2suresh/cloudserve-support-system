@@ -64,7 +64,17 @@ _DISAMBIGUATION_NOTES = (
     "question about where data is physically stored, or a request for written confirmation of "
     "storage location, is still data_residency even if the customer mentions needing it for their "
     "own compliance purposes, as long as no auditor/audit/retention word is used and the ticket "
-    "isn't asking to export or see records.\n\n"
+    "isn't asking to export or see records.\n"
+    "- feature_request vs any topic-specific category: if the ticket asks whether something is "
+    "on the roadmap, whether CloudServe is 'considering' adding or allowing a capability, or "
+    "otherwise requests a new feature, option, or configuration that does not exist today, "
+    "classify it as feature_request regardless of which topic area the requested capability "
+    "relates to (billing caps, retention periods, deployment rollouts, etc.) -- the presence of a "
+    "topic keyword (like 'retention') does not override this when the ticket is asking for "
+    "something new to be built or enabled, not asking about or using something that exists "
+    "today. Only use a topic-specific category (compliance_request, billing_query, "
+    "deployment_failure, etc.) when the ticket is about an existing capability, policy, or "
+    "problem, not a request for CloudServe to add one.\n\n"
 )
 
 _SYSTEM_PROMPT = (
