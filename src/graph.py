@@ -91,7 +91,9 @@ def node_classify_and_retrieve(state: PipelineState) -> dict:
 
 def node_route(state: PipelineState) -> dict:
     ticket = state["ticket"]
-    routing = route.route(state["classification"], state["retrieved"], threshold=config.CONFIDENCE_THRESHOLD)
+    routing = route.route(
+        state["classification"], state["retrieved"], ticket_body=ticket.body or "", threshold=config.CONFIDENCE_THRESHOLD
+    )
     metrics.ROUTING_DECISIONS.labels(action=routing.action).inc()
     entry = _entry(
         ticket, "route", routing.action, routing.action, routing.reason,
