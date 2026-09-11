@@ -47,7 +47,19 @@ _DISAMBIGUATION_NOTES = (
     "credential or API key being exposed, needing rotation, or being replaced -- even when "
     "phrased as needing 'the correct order of operations' or wanting to avoid downtime, which "
     "sounds procedural but is about a credential, not a deployment. Use rollback_request only "
-    "when the customer explicitly wants to revert a deployed release or version, not a key.\n\n"
+    "when the customer explicitly wants to revert a deployed release or version, not a key.\n"
+    "- deployment_failure vs rollback_request: use deployment_failure when a deployment itself "
+    "is failing or being automatically reverted by the platform -- a health check timeout "
+    "causing an automatic rollback, a build or dependency-resolution failure, a deploy stuck at "
+    "a stage -- even though the word 'rollback' or 'rolls back' appears, since that describes "
+    "what the platform did, not what the customer is asking for. Use rollback_request only when "
+    "the customer is explicitly asking to revert to a previous release or version themselves.\n"
+    "- compliance_request vs data_export: use compliance_request when an export or access-records "
+    "request is driven by an audit, auditor, regulatory, or retention-policy question -- even "
+    "when the ticket literally asks to 'export' records or data -- because the underlying need is "
+    "audit/compliance, not the customer's own operational use of the data. Use data_export only "
+    "when the customer wants to extract or download their own data for their own use, with no "
+    "audit, auditor, or retention-policy question involved.\n\n"
 )
 
 _SYSTEM_PROMPT = (
