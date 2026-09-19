@@ -38,8 +38,10 @@ def _run_classify(ticket: Ticket) -> tuple[ClassificationResult, float]:
     try:
         classification = classify.classify(ticket)
     except Exception:
-        logger.error("unexpected classify failure for %s:\n%s", ticket.ticket_id, traceback.format_exc())
-        classification = ClassificationResult(intent="unclear_request", urgency="medium", confidence=0.0, fallback_used=True)
+        logger.error("unexpected classify failure for %s:\n%s",
+                     ticket.ticket_id, traceback.format_exc())
+        classification = ClassificationResult(
+            intent="unclear_request", urgency="medium", confidence=0.0, fallback_used=True)
     return classification, (time.time() - t0) * 1000
 
 
@@ -48,7 +50,8 @@ def _run_retrieve(ticket: Ticket, query: str) -> tuple[list, float]:
     try:
         retrieved = get_retriever().retrieve(query)
     except Exception:
-        logger.error("unexpected retrieval failure for %s:\n%s", ticket.ticket_id, traceback.format_exc())
+        logger.error("unexpected retrieval failure for %s:\n%s",
+                     ticket.ticket_id, traceback.format_exc())
         retrieved = []
     return retrieved, (time.time() - t0) * 1000
 
@@ -68,8 +71,10 @@ def node_classify_and_retrieve(state: PipelineState) -> dict:
         classification, classify_latency_ms = classify_future.result()
         retrieved, retrieve_latency_ms = retrieve_future.result()
 
-    metrics.STAGE_LATENCY.labels(stage="classify").observe(classify_latency_ms / 1000)
-    metrics.STAGE_LATENCY.labels(stage="retrieve").observe(retrieve_latency_ms / 1000)
+    metrics.STAGE_LATENCY.labels(stage="classify").observe(
+        classify_latency_ms / 1000)
+    metrics.STAGE_LATENCY.labels(stage="retrieve").observe(
+        retrieve_latency_ms / 1000)
     metrics.CLASSIFICATION_CONFIDENCE.observe(classification.confidence)
 
     classify_entry = _entry(
@@ -79,7 +84,8 @@ def node_classify_and_retrieve(state: PipelineState) -> dict:
     )
     retrieve_entry = _entry(
         ticket, "retrieve", f"{len(retrieved)} passages", "retrieved",
-        ", ".join(p.doc_id for p in retrieved) if retrieved else "no passage cleared relevance threshold",
+        ", ".join(
+            p.doc_id for p in retrieved) if retrieved else "no passage cleared relevance threshold",
         retrieved_doc_ids=[p.doc_id for p in retrieved], latency_ms=retrieve_latency_ms,
     )
     return {
@@ -107,11 +113,14 @@ def node_generate(state: PipelineState) -> dict:
     ticket, routing = state["ticket"], state["routing"]
     t0 = time.time()
     try:
-        generation = generate.generate(ticket, state["classification"], state["retrieved"], routing)
+        generation = generate.generate(
+            ticket, state["classification"], state["retrieved"], routing)
     except Exception:
-        logger.error("unexpected generation failure for %s:\n%s", ticket.ticket_id, traceback.format_exc())
+        logger.error("unexpected generation failure for %s:\n%s",
+                     ticket.ticket_id, traceback.format_exc())
         mode = "answer" if routing.action == "auto_respond" else "summary"
-        generation = GenerationResult(draft_text="Unable to draft a response right now.", mode=mode, refused=True)
+        generation = GenerationResult(
+            draft_text="Unable to draft a response right now.", mode=mode, refused=True)
     latency_ms = (time.time() - t0) * 1000
     metrics.STAGE_LATENCY.labels(stage="generate").observe(latency_ms / 1000)
     entry = _entry(
@@ -126,8 +135,10 @@ def node_validate(state: PipelineState) -> dict:
     try:
         validation = guardrails.validate(state["generation"], ticket)
     except Exception:
-        logger.error("unexpected validation failure for %s:\n%s", ticket.ticket_id, traceback.format_exc())
-        validation = ValidationResult(passed=False, checks_run=[], blocked_reason="internal_error")
+        logger.error("unexpected validation failure for %s:\n%s",
+                     ticket.ticket_id, traceback.format_exc())
+        validation = ValidationResult(
+            passed=False, checks_run=[], blocked_reason="internal_error")
     if not validation.passed:
         check_name = (validation.blocked_reason or "unknown").split(":")[0]
         metrics.GUARDRAIL_BLOCKS.labels(check=check_name).inc()
@@ -144,13 +155,16 @@ _AI_DISCLOSURE = "\n\n---\nThis response was drafted automatically from our docu
 
 
 def node_finalize(state: PipelineState) -> dict:
-    ticket, routing, validation, generation = state["ticket"], state["routing"], state["validation"], state["generation"]
-    if validation.passed and routing.action == "auto_respond" and config.AUTO_RESPONSE_ENABLED:
+    ticket, routing, validation, generation = state["ticket"], state[
+        "routing"], state["validation"], state["generation"]
+    if validation.passed and routing.action == "auto_respond" and config.AUTO_RESPONSE_ENABLED and not generation.refused:
         final_action, final_text = "sent_to_customer", generation.draft_text + _AI_DISCLOSURE
         reason = routing.reason
     else:
         final_action, final_text = "escalated", generation.draft_text
-        if not config.AUTO_RESPONSE_ENABLED and validation.passed and routing.action == "auto_respond":
+        if generation.refused:
+            reason = "model declined to answer (refused=true) -- escalated rather than auto-sending a non-answer"
+        elif not config.AUTO_RESPONSE_ENABLED and validation.passed and routing.action == "auto_respond":
             reason = "kill switch active (AUTO_RESPONSE_ENABLED=false) -- auto-response withheld"
         else:
             reason = validation.blocked_reason or routing.reason
@@ -162,7 +176,8 @@ def build_graph():
     graph = StateGraph(PipelineState)
     for name, fn in [
         ("ingest", node_ingest), ("classify_and_retrieve", node_classify_and_retrieve),
-        ("route", node_route), ("generate", node_generate), ("validate", node_validate),
+        ("route", node_route), ("generate",
+                                node_generate), ("validate", node_validate),
         ("finalize", node_finalize),
     ]:
         graph.add_node(name, fn)
