@@ -3,12 +3,6 @@ import re
 from src import config
 from src.schemas import ClassificationResult, RetrievedPassage, RoutingDecision
 
-# Defense in depth for the policy-excluded intents (Brief §07's zero-tolerance framing):
-# a confirmed real bug (7/26 security_incident tickets auto-sent, all at 0.95 confidence,
-# because the classifier called them api_key_issue/account_access instead) showed that
-# relying on the classifier alone for a zero-tolerance policy is "a hope, not a control".
-# Each entry is a set of words that must ALL appear (any order, case-insensitive) in the
-# ticket body for the safety net to fire, independent of what the classifier said.
 _SECURITY_INCIDENT_SAFETY_NET: list[set[str]] = [
     {"breach"}, {"compromised"}, {"unauthorized", "access"}, {"hacked"}, {"leaked"},
     {"former", "employee", "access"},
